@@ -8,18 +8,19 @@ const {
 } = require('graphql');
 
 const user = [{ name: 'fre' }, { name: 'bikale' }, { name: 'mrx' }];
+
+const eventType = new GraphQLObjectType({
+  name: 'events',
+  fields: {
+    name: { type: GraphQLString }
+  }
+});
+
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
     events: {
-      type: new GraphQLList(
-        new GraphQLObjectType({
-          name: 'events',
-          fields: {
-            name: { type: GraphQLString }
-          }
-        })
-      ),
+      type: new GraphQLList(eventType),
       resolve: () => user
     }
   }
@@ -27,9 +28,21 @@ const RootQuery = new GraphQLObjectType({
 
 // Mutations
 const RootMutation = new GraphQLObjectType({
-  name: 'Mutation'
+  name: 'RootMutation',
+  fields: {
+    createEvent: {
+      type: eventType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve(parentValue, args) {
+        return args;
+      }
+    }
+  }
 });
 
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: RootMutation
 });
