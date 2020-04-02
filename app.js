@@ -2,11 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./schema.js');
-
+const mongoose = require('mongoose');
 
 const app = express();
 app.use(bodyParser.json());
 
+// Graphql server
 app.use(
   '/graphql',
   graphqlHTTP({
@@ -15,8 +16,22 @@ app.use(
   })
 );
 
+const PORT = process.env.MongoUser || 5000;
 
-
-app.listen(3000, () => {
-  console.log('Server running.... http://localhost:3000');
-});
+//Connect DB
+mongoose
+  .connect(process.env.MongoURI, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log(`MongoDB Connected ........`);
+    app.listen(PORT, () => {
+      console.log(`Server running.... http://localhost:${process.env.PORT}`);
+    });
+  })
+  .catch(err => {
+    console.log(err);
+  });

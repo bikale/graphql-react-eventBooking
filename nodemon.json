@@ -1,3 +1,6 @@
 {
-  "env": {}
+  "env": {
+    "MongoURI": "mongodb+srv://bikale:Lj1SSpilw0QwrGIC@event-booking-xtmnz.mongodb.net/eventbooking?retryWrites=true&w=majority",
+    "PORT": 3000
+  }
 }

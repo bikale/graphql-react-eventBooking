@@ -9,7 +9,7 @@ const {
 } = require('graphql');
 
 const events = [];
-
+//event type
 const eventType = new GraphQLObjectType({
   name: 'Event',
   fields: () => ({
@@ -21,6 +21,7 @@ const eventType = new GraphQLObjectType({
   })
 });
 
+// Root Query
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
@@ -57,6 +58,8 @@ const RootMutation = new GraphQLObjectType({
     }
   }
 });
+
+
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
