@@ -14,7 +14,7 @@ const eventType = new GraphQLObjectType({
   name: 'Event',
   fields: () => ({
     _id: { type: new GraphQLNonNull(GraphQLString) },
-    title: { type: GraphQLString },
+    title: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: new GraphQLNonNull(GraphQLString) },
     price: { type: new GraphQLNonNull(GraphQLFloat) },
     date: { type: new GraphQLNonNull(GraphQLString) }
@@ -51,9 +51,7 @@ const RootMutation = new GraphQLObjectType({
           price: +args.price,
           date: '12-12-1983'
         };
-
         events.push(event);
-
         return event;
       }
     }
