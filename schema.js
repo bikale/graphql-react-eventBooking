@@ -30,7 +30,28 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     events: {
       type: new GraphQLList(eventType),
-      resolve: () => events
+      resolve: () => {
+        return Event.find()
+          .then(result => result)
+          .catch(err => console.log);
+      }
+    },
+    findEvent: {
+      // search event by all element or by the field inserted
+      type: new GraphQLList(eventType),
+      args: {
+        _id: { type: GraphQLString },
+        title: { type: GraphQLString },
+        description: { type: GraphQLString },
+        price: { type: GraphQLFloat },
+        date: { type: GraphQLString }
+      },
+      resolve(parentValue, args) {
+        console.log(args);
+        return Event.find(args)
+          .then(result => result)
+          .catch(err => console.log);
+      }
     }
   }
 });
@@ -71,7 +92,7 @@ const RootMutation = new GraphQLObjectType({
 
         return event
           .save()
-          .then(res => res)
+          .then(result => result)
           .catch(err => console.log);
       }
     }
