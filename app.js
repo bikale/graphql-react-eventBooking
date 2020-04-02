@@ -16,7 +16,7 @@ app.use(
   })
 );
 
-const PORT = process.env.MongoUser || 5000;
+const PORT = process.env.PORT || 5000;
 
 //Connect DB
 mongoose
@@ -29,7 +29,7 @@ mongoose
   .then(() => {
     console.log(`MongoDB Connected ........`);
     app.listen(PORT, () => {
-      console.log(`Server running.... http://localhost:${process.env.PORT}`);
+      console.log(`Server running.... http://localhost:${PORT}`);
     });
   })
   .catch(err => {

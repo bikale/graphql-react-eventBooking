@@ -1,3 +1,4 @@
+const Event = require('./models/Event');
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -8,8 +9,10 @@ const {
   GraphQLNonNull
 } = require('graphql');
 
-const events = [];
-//event type
+// Hardecoded data storage
+// const events=[]
+
+//event type(graphql)
 const eventType = new GraphQLObjectType({
   name: 'Event',
   fields: () => ({
@@ -44,22 +47,36 @@ const RootMutation = new GraphQLObjectType({
         price: { type: GraphQLFloat },
         date: { type: GraphQLString }
       },
-      async resolve(parentValue, args) {
-        const event = {
-          _id: Math.random().toString(),
+      resolve(parentValue, args) {
+        //storing event info to array storage
+
+        // const event = {
+        //   _id: Math.random().toString(),
+        //   title: args.title,
+        //   description: args.description,
+        //   price: +args.price,
+        //   date: '12-12-1983'
+        // };
+        // events.push(event);
+        // return event;
+
+        //store event information to the cloud DB
+
+        const event = new Event({
           title: args.title,
           description: args.description,
           price: +args.price,
-          date: '12-12-1983'
-        };
-        events.push(event);
-        return event;
+          date: new Date(args.date)
+        });
+
+        return event
+          .save()
+          .then(res => res)
+          .catch(err => console.log);
       }
     }
   }
 });
-
-
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
