@@ -1,5 +1,6 @@
 const Event = require('./models/Event');
 const User = require('./models/User');
+const bcrypt = require('bcryptjs');
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -29,8 +30,8 @@ const eventType = new GraphQLObjectType({
 const userType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
-    _id: { type: GraphQLString },
-    email: { type: GraphQLString },
+    _id: { type: new GraphQLNonNull(GraphQLString) },
+    email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: GraphQLString },
   }),
 });
@@ -99,11 +100,26 @@ const RootMutation = new GraphQLObjectType({
           description: args.description,
           price: +args.price,
           date: new Date(args.date),
+          creator: '5e8ad39290ef9e475528e447',
         });
-
+        let eventResult;
         return event
           .save()
-          .then((result) => result)
+          .then((result) => {
+            eventResult = result;
+
+            return User.findById('5e8ad39290ef9e475528e447')
+              .then((user) => {
+                if (!user) {
+                  throw new Error('User doesnot exist');
+                }
+                user.createdEvents.push(event);
+                return user.save();
+              })
+              .then((result) => {
+                return eventResult;
+              });
+          })
           .catch((err) => console.log);
       },
     },
@@ -113,13 +129,27 @@ const RootMutation = new GraphQLObjectType({
         email: { type: new GraphQLNonNull(GraphQLString) },
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parentValue, args) {
-        const user = new User({ email: args.email, password: args.password });
+      async resolve(parentValue, args) {
+        return User.findOne({ email: args.email })
+          .then(async (user) => {
+            if (user) {
+              throw new Error('User exists alread');
+            }
 
-        return user
-          .save()
-          .then((res) => res)
-          .catch((err) => console.log(err));
+            const newuser = new User({
+              email: args.email,
+              password: args.password,
+            });
+
+            //hash password
+            const salt = await bcrypt.genSalt(12);
+            newuser.password = await bcrypt.hash(newuser.password, salt);
+            const result = await newuser.save();
+            return { ...result._doc, password: null };
+          })
+          .catch((err) => {
+            throw err;
+          });
       },
     },
   },
