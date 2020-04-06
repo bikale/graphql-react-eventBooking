@@ -1,4 +1,5 @@
 const Event = require('./models/Event');
+const User = require('./models/User');
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -6,7 +7,7 @@ const {
   GraphQLFloat,
   GraphQLSchema,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
 } = require('graphql');
 
 // Hardecoded data storage
@@ -20,8 +21,18 @@ const eventType = new GraphQLObjectType({
     title: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: new GraphQLNonNull(GraphQLString) },
     price: { type: new GraphQLNonNull(GraphQLFloat) },
-    date: { type: new GraphQLNonNull(GraphQLString) }
-  })
+    date: { type: new GraphQLNonNull(GraphQLString) },
+  }),
+});
+
+//event type(graphql)
+const userType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    _id: { type: GraphQLString },
+    email: { type: GraphQLString },
+    password: { type: GraphQLString },
+  }),
 });
 
 // Root Query
@@ -32,9 +43,9 @@ const RootQuery = new GraphQLObjectType({
       type: new GraphQLList(eventType),
       resolve: () => {
         return Event.find()
-          .then(result => result)
-          .catch(err => console.log);
-      }
+          .then((result) => result)
+          .catch((err) => console.log);
+      },
     },
     findEvent: {
       // search event by all element or by the field inserted
@@ -44,16 +55,16 @@ const RootQuery = new GraphQLObjectType({
         title: { type: GraphQLString },
         description: { type: GraphQLString },
         price: { type: GraphQLFloat },
-        date: { type: GraphQLString }
+        date: { type: GraphQLString },
       },
       resolve(parentValue, args) {
         console.log(args);
         return Event.find(args)
-          .then(result => result)
-          .catch(err => console.log);
-      }
-    }
-  }
+          .then((result) => result)
+          .catch((err) => console.log);
+      },
+    },
+  },
 });
 
 // Mutations
@@ -66,7 +77,7 @@ const RootMutation = new GraphQLObjectType({
         title: { type: GraphQLString },
         description: { type: GraphQLString },
         price: { type: GraphQLFloat },
-        date: { type: GraphQLString }
+        date: { type: GraphQLString },
       },
       resolve(parentValue, args) {
         //storing event info to array storage
@@ -87,19 +98,34 @@ const RootMutation = new GraphQLObjectType({
           title: args.title,
           description: args.description,
           price: +args.price,
-          date: new Date(args.date)
+          date: new Date(args.date),
         });
 
         return event
           .save()
-          .then(result => result)
-          .catch(err => console.log);
-      }
-    }
-  }
+          .then((result) => result)
+          .catch((err) => console.log);
+      },
+    },
+    createUser: {
+      type: userType,
+      args: {
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parentValue, args) {
+        const user = new User({ email: args.email, password: args.password });
+
+        return user
+          .save()
+          .then((res) => res)
+          .catch((err) => console.log(err));
+      },
+    },
+  },
 });
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
-  mutation: RootMutation
+  mutation: RootMutation,
 });
