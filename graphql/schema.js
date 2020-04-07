@@ -147,7 +147,7 @@ const RootMutation = new GraphQLObjectType({
             description: args.description,
             price: +args.price,
             date: new Date(args.date),
-            creator: '5e8ad39290ef9e475528e447',
+            creator: '5e8c221ddf68b2410cbcc131',
           });
           let eventResult;
           const result = await event.save();
@@ -156,7 +156,7 @@ const RootMutation = new GraphQLObjectType({
             date: new Date(result._doc.date).toISOString(),
             creator: findCreator.bind(this, result._doc.creator),
           };
-          const user = await User.findById('5e8ad39290ef9e475528e447');
+          const user = await User.findById('5e8c221ddf68b2410cbcc131');
           if (!user) {
             throw new Error('User doesnot exist');
           }
