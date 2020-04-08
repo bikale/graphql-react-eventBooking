@@ -12,19 +12,19 @@ app.use(
   '/graphql',
   graphqlHTTP({
     schema: schema,
-    graphiql: true
+    graphiql: true,
   })
 );
 
 const PORT = process.env.PORT || 5000;
 
-//Connect DB
+//Connect mongoDB
 mongoose
   .connect(process.env.MongoURI, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   })
   .then(() => {
     console.log(`MongoDB Connected ........`);
@@ -32,6 +32,6 @@ mongoose
       console.log(`Server running.... http://localhost:${PORT}`);
     });
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err);
   });
