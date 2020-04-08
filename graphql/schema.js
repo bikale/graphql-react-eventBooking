@@ -1,6 +1,9 @@
+const bcrypt = require('bcryptjs');
+
 const Event = require('../models/Event');
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
+const Booking = require('../models/Booking');
+
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -28,7 +31,7 @@ const findCreator = async (userId) => {
   }
 };
 
-//find events created by the users
+//find events created by the user
 
 const eventCreated = async (eventIds) => {
   try {
@@ -42,6 +45,19 @@ const eventCreated = async (eventIds) => {
     });
   } catch (error) {
     throw error;
+  }
+};
+//find the single event created by the user
+const findSingleEvent = async (eventId) => {
+  try {
+    const event = await Event.findById(eventId);
+    return {
+      ...event._doc,
+      _id: event.id,
+      creator: findCreator.bind(this, event.creator),
+    };
+  } catch (err) {
+    throw err;
   }
 };
 
@@ -66,6 +82,18 @@ const userType = new GraphQLObjectType({
     email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: GraphQLString },
     createdEvents: { type: new GraphQLList(eventType) },
+  }),
+});
+
+//event type(graphql)
+const bookingType = new GraphQLObjectType({
+  name: 'Booking',
+  fields: () => ({
+    _id: { type: new GraphQLNonNull(GraphQLString) },
+    event: { type: eventType },
+    user: { type: userType },
+    createdAt: { type: new GraphQLNonNull(GraphQLString) },
+    updatedAt: { type: new GraphQLNonNull(GraphQLString) },
   }),
 });
 
@@ -106,6 +134,26 @@ const RootQuery = new GraphQLObjectType({
           console.log(args);
           const result = awaitEvent.find(args);
           return result;
+        } catch (error) {
+          throw error;
+        }
+      },
+    },
+    bookings: {
+      type: new GraphQLList(bookingType),
+      resolve: async () => {
+        try {
+          const bookings = await Booking.find();
+          return bookings.map((booking) => {
+            return {
+              ...booking._doc,
+              _id: booking.id,
+              user: findCreator.bind(this, booking._doc.user),
+              event: findSingleEvent.bind(this, booking._doc.event),
+              createdAt: new Date(booking._doc.createdAt).toISOString(),
+              updatedAt: new Date(booking._doc.updatedAt).toISOString(),
+            };
+          });
         } catch (error) {
           throw error;
         }
@@ -192,6 +240,55 @@ const RootMutation = new GraphQLObjectType({
           return { ...result._doc, password: null };
         } catch (error) {
           throw error;
+        }
+      },
+    },
+    bookEvent: {
+      type: bookingType,
+      args: {
+        eventId: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve: async (parentValue, args) => {
+        try {
+          const createdEvent = await Event.findOne({ _id: args.eventId });
+          const booking = new Booking({
+            user: '5e8c221ddf68b2410cbcc131',
+            event: createdEvent,
+          });
+
+          const result = await booking.save();
+          return {
+            ...result._doc,
+            _id: result.id,
+            user: findCreator.bind(this, booking._doc.user),
+            event: findSingleEvent.bind(this, booking._doc.event),
+            createdAt: new Date(result._doc.createdAt).toISOString(),
+            updatedAt: new Date(result._doc.updatedAt).toISOString(),
+          };
+        } catch (error) {
+          throw error;
+        }
+      },
+    },
+    cancelBooking: {
+      type: eventType,
+      args: {
+        bookingId: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve: async (parentValue, args) => {
+        try {
+          const booking = await Booking.findById(args.bookingId).populate(
+            'event'
+          );
+          const event = {
+            ...booking.event._doc,
+            _id: booking.event.id,
+            creator: findCreator.bind(this, booking.event._doc.creator),
+          };
+          await Booking.deleteOne({ _id: args.bookingId });
+          return event;
+        } catch (err) {
+          throw err;
         }
       },
     },
