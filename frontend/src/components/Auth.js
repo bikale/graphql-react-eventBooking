@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import { connect } from 'react-redux';
 
 class Auth extends Component {
-  state = {
-    isLogin: true,
-  };
-
   constructor(props) {
     super(props);
     this.emailEl = React.createRef();
@@ -66,7 +63,10 @@ class Auth extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
+        if (resData.data.login.token) {
+          const { token, userId, tokenExpiration } = resData.data.login;
+          this.props.onLoginEventHandler(token, userId, tokenExpiration);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -74,6 +74,7 @@ class Auth extends Component {
   };
 
   render() {
+    console.log(this.props);
     return (
       <div className="container-fluid-lg d-flex justify-content-center pt-5">
         <div className="jumbotron">
@@ -108,7 +109,7 @@ class Auth extends Component {
             </button>
             <hr />
             <button type="button" onClick={this.switchModeHandler}>
-              Switch to {this.state.isLogin ? 'Signup' : 'Login'}
+              Switch to {this.props.token ? 'Signup' : 'Login'}
             </button>
           </form>
         </div>
@@ -116,4 +117,23 @@ class Auth extends Component {
     );
   }
 }
-export default Auth;
+
+const mapStateToProps = (state) => {
+  return {
+    ...state,
+  };
+};
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onLoginEventHandler: (token, userId, tokenExpiration) =>
+      dispatch({
+        type: 'login',
+        token: token,
+        userId: userId,
+        tokenExpiration: tokenExpiration,
+      }),
+    onLogOutEventHandler: () => dispatch({ type: 'logout' }),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Auth);
