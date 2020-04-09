@@ -36,18 +36,18 @@ class Auth extends Component {
           `,
     };
 
-    if (!this.state.isLogin) {
-      requestBody = {
-        query: `
-              mutation {
-                createUser(email: "${email}", password: "${password}") {
-                  _id
-                  email
-                }
-              }
-            `,
-      };
-    }
+    // if (!this.props.token) {
+    //   requestBody = {
+    //     query: `
+    //           mutation {
+    //             createUser(email: "${email}", password: "${password}") {
+    //               _id
+    //               email
+    //             }
+    //           }
+    //         `,
+    //   };
+    // }
 
     fetch('http://localhost:5000/graphql', {
       method: 'POST',
@@ -74,7 +74,6 @@ class Auth extends Component {
   };
 
   render() {
-    console.log(this.props);
     return (
       <div className="container-fluid-lg d-flex justify-content-center pt-5">
         <div className="jumbotron">
@@ -103,13 +102,9 @@ class Auth extends Component {
               <input type="checkbox" />
               Remember me
             </div>
-
+            <hr />
             <button type="submit" className="btn btn-primary">
               Login
-            </button>
-            <hr />
-            <button type="button" onClick={this.switchModeHandler}>
-              Switch to {this.props.token ? 'Signup' : 'Login'}
             </button>
           </form>
         </div>
@@ -132,7 +127,6 @@ const mapDispatchToProps = (dispatch) => {
         userId: userId,
         tokenExpiration: tokenExpiration,
       }),
-    onLogOutEventHandler: () => dispatch({ type: 'logout' }),
   };
 };
 
