@@ -1,6 +1,7 @@
 {
   "env": {
     "MongoURI": "mongodb+srv://bikale:Lj1SSpilw0QwrGIC@event-booking-xtmnz.mongodb.net/eventbooking?retryWrites=true&w=majority",
-    "PORT": 3000
+    "PORT": 3000,
+    "JWTSECRETKEY": "somesupersecretkey"
   }
 }

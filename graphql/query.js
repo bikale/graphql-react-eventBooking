@@ -43,9 +43,10 @@ const RootQuery = new GraphQLObjectType({
           if (!isEqual) {
             throw new Error('Password is Incorrect');
           }
+
           const token = await jwt.sign(
             { userId: user.id, email: user.email },
-            'somesupersecretkey',
+            process.env.JWTSECRETKEY,
             {
               expiresIn: '1h',
             }
@@ -58,10 +59,9 @@ const RootQuery = new GraphQLObjectType({
     },
     events: {
       type: new GraphQLList(eventType),
-      resolve: async () => {
+      resolve: async (parent,args,req) => {
         try {
           const events = await Event.find();
-
           return events.map((event) => {
             return {
               ...event._doc,
@@ -96,7 +96,10 @@ const RootQuery = new GraphQLObjectType({
     },
     bookings: {
       type: new GraphQLList(bookingType),
-      resolve: async () => {
+      resolve: async (parent, args, req) => {
+        if (!req.isAuthorized) {
+          throw new Error('user is not authenticated');
+        }
         try {
           const bookings = await Booking.find();
           return bookings.map((booking) => {
