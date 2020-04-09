@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const Event = require('../models/Event');
 const User = require('../models/User');
@@ -38,6 +39,18 @@ const RootQuery = new GraphQLObjectType({
           if (!user) {
             throw new Error('user does not exist');
           }
+          const isEqual = await bcrypt.compare(args.password, user.password);
+          if (!isEqual) {
+            throw new Error('Password is Incorrect');
+          }
+          const token = await jwt.sign(
+            { userId: user.id, email: user.email },
+            'somesupersecretkey',
+            {
+              expiresIn: '1h',
+            }
+          );
+          return { userId: user.id, token: token, tokenExpiration: 1 };
         } catch (error) {
           throw error;
         }
