@@ -4,15 +4,25 @@ const mongoose = require('mongoose');
 const graphqlHTTP = require('express-graphql');
 
 const schema = require('./graphql/schema.js');
-const isAuth = require('./middleware/isAuth')
+const isAuth = require('./middleware/isAuth');
 
 const app = express();
 
 app.use(bodyParser.json());
 
-//authentication middleware
-app.use(isAuth)
+//allow cross origin access
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
+//authentication middleware
+app.use(isAuth);
 
 // Graphql server
 app.use(
