@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { connect } from "react-redux";
 import Spinner from "./Main/Spinner/Spinner";
+import BookingList from "./Main/Bookings/BookingList";
 class Bookings extends Component {
   state = {
     isLoading: false,
@@ -48,20 +49,59 @@ class Bookings extends Component {
         this.setState({ isLoading: false });
       });
   }
+
+  deleteBookingHandler = (bookingId) => {
+    this.setState({ isLoading: true });
+    let deleteBooking = {
+      query: `
+            mutation {
+              cancelBooking(bookingId:"${bookingId}"){ 
+                  _id
+                  title
+              }
+            }
+          `,
+    };
+
+    fetch("http://localhost:5000/graphql", {
+      method: "POST",
+      body: JSON.stringify(deleteBooking),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + this.props.token,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        this.setState((prevState) => {
+          const updatedBooking = prevState.bookings.filter(
+            (booking) => booking._id !== bookingId
+          );
+
+          return { bookings: updatedBooking, isLoading: false };
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        this.setState({ isLoading: false });
+      });
+  };
+
   render() {
     return (
       <Fragment>
         {this.state.isLoading ? (
           <Spinner />
         ) : (
-          <ul>
-            {this.state.bookings.map((booking) => (
-              <li key={booking._id}>
-                {booking.event.title} -{" "}
-                {new Date(booking.createdAt).toLocaleDateString()}{" "}
-              </li>
-            ))}
-          </ul>
+          <BookingList
+            bookings={this.state.bookings}
+            onDelete={this.deleteBookingHandler}
+          />
         )}
       </Fragment>
     );
