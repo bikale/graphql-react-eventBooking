@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import Modal from "./Main/Modal/Modal";
 import { connect } from "react-redux";
 import EventList from "./Main/Events/EventList";
+import Spinner from "./Main/Spinner/Spinner";
 
 class Events extends Component {
   state = { events: [], isLoading: false };
   componentDidMount() {
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, isActive: true }); //isActive:true used to close the http request when the component is unmounted
     let queryEvent = {
       query: `
             query {
@@ -41,35 +42,29 @@ class Events extends Component {
       })
       .then((resData) => {
         const events = resData.data.events;
-        this.setState({ events: events, isLoading: false });
+        if (this.state.isActive) {
+          this.setState({ events: events, isLoading: false });
+        }
       })
       .catch((err) => {
         console.log(err);
-        this.setState({ isLoading: false });
+        if (this.state.isActive) {
+          this.setState({ isLoading: false });
+        }
       });
   }
+
+  componentWillUnmount() {
+    this.setState({ isActive: false });
+  }
+
   render() {
     return (
       <div className="container">
         <h1>Events Page</h1>
         <Modal />
         {this.state.isLoading ? (
-          <div className="container d-flex justify-content-center">
-            <div className="lds-spinner">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-          </div>
+          <Spinner />
         ) : (
           <EventList
             events={this.state.events}
