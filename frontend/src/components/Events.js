@@ -4,8 +4,9 @@ import { connect } from "react-redux";
 import EventList from "./Main/Events/EventList";
 
 class Events extends Component {
-  state = { events: [] };
+  state = { events: [], isLoading: false };
   componentDidMount() {
+    this.setState({ isLoading: true });
     let queryEvent = {
       query: `
             query {
@@ -39,12 +40,12 @@ class Events extends Component {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
         const events = resData.data.events;
-        this.setState({ events: events });
+        this.setState({ events: events, isLoading: false });
       })
       .catch((err) => {
         console.log(err);
+        this.setState({ isLoading: false });
       });
   }
   render() {
@@ -52,7 +53,29 @@ class Events extends Component {
       <div className="container">
         <h1>Events Page</h1>
         <Modal />
-        <EventList events={this.state.events} />
+        {this.state.isLoading ? (
+          <div className="container d-flex justify-content-center">
+            <div className="lds-spinner">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        ) : (
+          <EventList
+            events={this.state.events}
+            authUserId={this.props.userId}
+          />
+        )}
       </div>
     );
   }
