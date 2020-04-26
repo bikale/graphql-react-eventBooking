@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 
-const Event = require('../models/Event');
-const User = require('../models/User');
-const Booking = require('../models/Booking');
+const Event = require("../models/Event");
+const User = require("../models/User");
+const Booking = require("../models/Booking");
 
 const {
   GraphQLObjectType,
@@ -12,14 +12,14 @@ const {
   GraphQLSchema,
   GraphQLList,
   GraphQLNonNull,
-} = require('graphql');
+} = require("graphql");
 
-const { eventCreated, findCreator, findSingleEvent } = require('./queryHelper');
-const { bookingType, eventType, userType } = require('./graphqlType');
+const { eventCreated, findCreator, findSingleEvent } = require("./queryHelper");
+const { bookingType, eventType, userType } = require("./graphqlType");
 
 // Mutations
 const RootMutation = new GraphQLObjectType({
-  name: 'RootMutation',
+  name: "RootMutation",
   fields: {
     createEvent: {
       type: eventType,
@@ -31,7 +31,7 @@ const RootMutation = new GraphQLObjectType({
       },
       resolve: async (parentValue, args, req) => {
         if (!req.isAuthorized) {
-          throw new Error('user is not authenticated');
+          throw new Error("user is not authenticated");
         }
         try {
           const event = new Event({
@@ -50,7 +50,7 @@ const RootMutation = new GraphQLObjectType({
           };
           const user = await User.findById(req.userId);
           if (!user) {
-            throw new Error('User doesnot exist');
+            throw new Error("User doesnot exist");
           }
           user.createdEvents.push(event);
           await user.save();
@@ -71,7 +71,7 @@ const RootMutation = new GraphQLObjectType({
           const user = await User.findOne({ email: args.email });
 
           if (user) {
-            throw new Error('User exists alread');
+            throw new Error("User exists alread");
           }
           const newuser = new User({
             email: args.email,
@@ -94,7 +94,7 @@ const RootMutation = new GraphQLObjectType({
       },
       resolve: async (parentValue, args, req) => {
         if (!req.isAuthorized) {
-          throw new Error('user is not authenticated');
+          throw new Error("user is not authenticated");
         }
         try {
           const createdEvent = await Event.findOne({ _id: args.eventId });
@@ -124,11 +124,11 @@ const RootMutation = new GraphQLObjectType({
       },
       resolve: async (parentValue, args, req) => {
         if (!req.isAuthorized) {
-          throw new Error('user is not authenticated');
+          throw new Error("user is not authenticated");
         }
         try {
           const booking = await Booking.findById(args.bookingId).populate(
-            'event'
+            "event"
           );
           const event = {
             ...booking.event._doc,

@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import axios from 'axios';
-import { connect } from 'react-redux';
+import React, { Component } from "react";
+
+import { connect } from "react-redux";
 
 class Auth extends Component {
   constructor(props) {
@@ -49,16 +49,16 @@ class Auth extends Component {
     //   };
     // }
 
-    fetch('http://localhost:5000/graphql', {
-      method: 'POST',
+    fetch("http://localhost:5000/graphql", {
+      method: "POST",
       body: JSON.stringify(requestBody),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Failed!');
+          throw new Error("Failed!");
         }
         return res.json();
       })
@@ -122,7 +122,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     onLoginEventHandler: (token, userId, tokenExpiration) =>
       dispatch({
-        type: 'login',
+        type: "login",
         token: token,
         userId: userId,
         tokenExpiration: tokenExpiration,
