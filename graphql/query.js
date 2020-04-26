@@ -1,17 +1,17 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const Event = require('../models/Event');
-const User = require('../models/User');
-const Booking = require('../models/Booking');
+const Event = require("../models/Event");
+const User = require("../models/User");
+const Booking = require("../models/Booking");
 
-const { eventCreated, findCreator, findSingleEvent } = require('./queryHelper');
+const { eventCreated, findCreator, findSingleEvent } = require("./queryHelper");
 const {
   bookingType,
   eventType,
   userType,
   authDataType,
-} = require('./graphqlType');
+} = require("./graphqlType");
 
 const {
   GraphQLObjectType,
@@ -21,11 +21,11 @@ const {
   GraphQLSchema,
   GraphQLList,
   GraphQLNonNull,
-} = require('graphql');
+} = require("graphql");
 
 // Root Query
 const RootQuery = new GraphQLObjectType({
-  name: 'RootQueryType',
+  name: "RootQueryType",
   fields: {
     login: {
       type: authDataType,
@@ -37,18 +37,18 @@ const RootQuery = new GraphQLObjectType({
         try {
           const user = await User.findOne({ email: args.email });
           if (!user) {
-            throw new Error('user does not exist');
+            throw new Error("user does not exist");
           }
           const isEqual = await bcrypt.compare(args.password, user.password);
           if (!isEqual) {
-            throw new Error('Password is Incorrect');
+            throw new Error("Password is Incorrect");
           }
 
           const token = await jwt.sign(
             { userId: user.id, email: user.email },
             process.env.JWTSECRETKEY,
             {
-              expiresIn: '1h',
+              expiresIn: "1h",
             }
           );
           return { userId: user.id, token: token, tokenExpiration: 1 };
@@ -59,7 +59,7 @@ const RootQuery = new GraphQLObjectType({
     },
     events: {
       type: new GraphQLList(eventType),
-      resolve: async (parent,args,req) => {
+      resolve: async (parent, args, req) => {
         try {
           const events = await Event.find();
           return events.map((event) => {
@@ -98,10 +98,10 @@ const RootQuery = new GraphQLObjectType({
       type: new GraphQLList(bookingType),
       resolve: async (parent, args, req) => {
         if (!req.isAuthorized) {
-          throw new Error('user is not authenticated');
+          throw new Error("user is not authenticated");
         }
         try {
-          const bookings = await Booking.find();
+          const bookings = await Booking.find({ user: req.userId });
           return bookings.map((booking) => {
             return {
               ...booking._doc,

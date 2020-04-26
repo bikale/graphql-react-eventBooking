@@ -6,8 +6,11 @@ import Spinner from "./Main/Spinner/Spinner";
 
 class Events extends Component {
   state = { events: [], isLoading: false };
+
+  isActive = true; //isActive:true used to close the http request when the component is unmounted
+
   componentDidMount() {
-    this.setState({ isLoading: true, isActive: true }); //isActive:true used to close the http request when the component is unmounted
+    this.setState({ isLoading: true });
     let queryEvent = {
       query: `
             query {
@@ -42,20 +45,20 @@ class Events extends Component {
       })
       .then((resData) => {
         const events = resData.data.events;
-        if (this.state.isActive) {
+        if (this.isActive) {
           this.setState({ events: events, isLoading: false });
         }
       })
       .catch((err) => {
         console.log(err);
-        if (this.state.isActive) {
+        if (this.isActive) {
           this.setState({ isLoading: false });
         }
       });
   }
 
   componentWillUnmount() {
-    this.setState({ isActive: false });
+    this.isActive = false;
   }
 
   render() {
