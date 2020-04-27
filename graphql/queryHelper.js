@@ -1,13 +1,24 @@
-const Event = require('../models/Event');
-const User = require('../models/User');
-const Booking = require('../models/Booking');
+const DataLoader = require("dataloader");
+
+const Event = require("../models/Event");
+const User = require("../models/User");
+const Booking = require("../models/Booking");
+
+const eventLoader = new DataLoader((eventIds) => {
+  return eventCreated(eventIds);
+});
+
+const userLoader = new DataLoader((userIds) => {
+  return User.find({ _id: { $in: userIds } });
+});
 
 const findCreator = async (userId) => {
   try {
-    const creator = await User.findById(userId);
+    const creator = await userLoader.load(userId.toString()); //User.findById(userId);
     return {
       ...creator._doc,
-      createdEvents: eventCreated.bind(this, creator.createdEvents),
+      createdEvents: () =>
+        eventLoader.loadMany(creator.createdEvents.toString()), //eventCreated.bind(this, creator.createdEvents),
     };
   } catch (error) {
     throw error;
@@ -33,12 +44,13 @@ const eventCreated = async (eventIds) => {
 //find the single event created by the user
 const findSingleEvent = async (eventId) => {
   try {
-    const event = await Event.findById(eventId);
-    return {
-      ...event._doc,
-      _id: event.id,
-      creator: findCreator.bind(this, event.creator),
-    };
+    const event = await eventLoader.load(eventId.toString()); //await Event.findById(eventId);
+    return event;
+    // return {
+    //   ...event._doc,
+    //   _id: event.id,
+    //   creator: findCreator.bind(this, event.creator),
+    // };
   } catch (err) {
     throw err;
   }
