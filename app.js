@@ -22,6 +22,7 @@ app.use((req, res, next) => {
 });
 //fre
 //fre
+//i h u 
 //authentication middleware
 app.use(isAuth);
 
